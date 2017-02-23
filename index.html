@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GeoJSON viewer</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+     var map;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: {{.Zoom}},
+            mapTypeControl: true,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        // Set the stroke width, and fill color for each polygon
+        map.data.setStyle({
+            fillColor: 'green',
+            strokeWeight: 1
+        });
+
+        var bounds = new google.maps.LatLngBounds();
+
+        google.maps.event.addListener(map.data,'addfeature',function(e){
+            geometry = e.feature.getGeometry();
+            switch (geometry.getType()) {
+            case "GeometryCollection":
+                geometry.getArray().forEach(function(polygon){
+                    extendBounds(polygon);
+                })
+                break;
+            case "Polygon":
+                extendBounds(geometry);
+                break;
+            }
+        });
+
+        function extendBounds(polygon) {
+            polygon.getArray().forEach(function(path) {
+                path.getArray().forEach(function(latLng){
+                    bounds.extend(latLng);
+                })})
+        };
+
+        // Load GeoJSON.
+         map.data.loadGeoJson({{.GeoJSONURL}}, null, function (features) {
+             map.setCenter(bounds.getCenter());
+             map.fitBounds(bounds);
+             bounds = null;
+         });
+
+     }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?v=3.exp&key={{.Key}}&callback=initMap">
+    </script>
+    </body>
+
+</html>
