@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./web"
 	"flag"
+	"github.com/ridha/geojv/web"
 	"log"
 	"os"
 )
